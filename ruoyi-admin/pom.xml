@@ -60,6 +60,13 @@
             <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
+        <!-- 自建模块-->
+        <!-- 新闻公告管理模块 -->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>jzbd-news</artifactId>
+            <version>3.8.4</version>
+        </dependency>
 
     </dependencies>
 
