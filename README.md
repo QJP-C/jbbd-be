@@ -15,4 +15,4 @@ npm install
 npm run dev
 ```
 # 后端
-redis和mysql 数据库已经连接远程直接启动
+redis和mysql 数据库已经连接远程直接启动111
