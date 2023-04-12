@@ -53,7 +53,10 @@ public class NewsServiceImpl implements INewsService
     @Override
     public int insertNews(News news)
     {
+        String url = "http://localhost/dev-api";
         news.setCreateTime(DateUtils.getNowDate());
+        System.out.println(url+news.getNewsImg()+"=====");
+        news.setNewsImg(url+news.getNewsImg());
         return newsMapper.insertNews(news);
     }
 
