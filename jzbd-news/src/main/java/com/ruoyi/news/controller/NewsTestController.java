@@ -57,7 +57,7 @@ public class NewsTestController extends BaseController
         HashMap<String,String> map = new HashMap<>();
         map.put("code","200");
         map.put("data","asdasdas");
-        map.put("message","外部访问成功");
+        map.put("message","外部访问成功qjp");
         return map;
     }
 
