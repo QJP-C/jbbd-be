@@ -106,7 +106,7 @@
         </template>
       </el-table-column>
       <el-table-column label="浏览量" align="center" prop="pageViews" />
-      <el-table-column label="正文" align="center" prop="specificContent" />
+      <el-table-column label="正文" align="center" prop="specificContent" :show-overflow-tooltip="true"/>
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.news" :value="scope.row.status"/>
@@ -154,7 +154,7 @@
     />
 
     <!-- 添加或修改新闻对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="新闻题目" prop="newsTitle">
           <el-input v-model="form.newsTitle" placeholder="请输入新闻题目" />
@@ -166,7 +166,7 @@
           <image-upload v-model="form.newsImg"/>
         </el-form-item>
         <el-form-item label="正文">
-          <editor v-model="form.specificContent" :min-height="192"/>
+          <editor v-model="form.specificContent" :min-height="192" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
@@ -242,6 +242,7 @@ export default {
       this.loading = true;
       listNews(this.queryParams).then(response => {
         this.newsList = response.rows;
+        // console.log(this.newsList.specificContent)
         this.total = response.total;
         this.loading = false;
       });

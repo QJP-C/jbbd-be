@@ -75,7 +75,7 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="id" align="center" prop="id" />
       <el-table-column label="标题" align="center" prop="biaoti" />
-      <el-table-column label="内容" align="center" prop="neirong" />
+      <el-table-column label="内容" align="center" prop="neirong" :show-overflow-tooltip="true"/>
       <el-table-column label="创建时间" align="center" prop="creatTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.creatTime, '{y}-{m}-{d} {h}:{m}:{s}') }}</span>
