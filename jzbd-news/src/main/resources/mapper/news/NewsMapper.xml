@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.news.mapper.NewsMapper">
+
+    <resultMap type="News" id="NewsResult">
+        <result property="newsId"    column="news_id"    />
+        <result property="newsTitle"    column="news_title"    />
+        <result property="newsSource"    column="news_source"    />
+        <result property="newsImg"    column="news_img"    />
+        <result property="pageViews"    column="page_views"    />
+        <result property="specificContent"    column="specific_content"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectNewsVo">
+        select news_id, news_title, news_source, news_img, page_views, specific_content, status, create_by, create_time, update_by, update_time, remark from news
+    </sql>
+
+    <select id="selectNewsList" parameterType="News" resultMap="NewsResult">
+        <include refid="selectNewsVo"/>
+        <where>
+            <if test="newsTitle != null  and newsTitle != ''"> and news_title like concat('%', #{newsTitle}, '%')</if>
+            <if test="newsSource != null  and newsSource != ''"> and news_source like concat('%', #{newsSource}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="createBy != null  and createBy != ''"> and create_by like concat('%', #{createBy}, '%')</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+        </where>
+    </select>
+
+    <select id="selectNewsByNewsId" parameterType="Long" resultMap="NewsResult">
+        <include refid="selectNewsVo"/>
+        where news_id = #{newsId}
+    </select>
+
+    <insert id="insertNews" parameterType="News">
+        insert into news
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="newsId != null">news_id,</if>
+            <if test="newsTitle != null">news_title,</if>
+            <if test="newsSource != null">news_source,</if>
+            <if test="newsImg != null">news_img,</if>
+            <if test="pageViews != null">page_views,</if>
+            <if test="specificContent != null">specific_content,</if>
+            <if test="status != null">status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="newsId != null">#{newsId},</if>
+            <if test="newsTitle != null">#{newsTitle},</if>
+            <if test="newsSource != null">#{newsSource},</if>
+            <if test="newsImg != null">#{newsImg},</if>
+            <if test="pageViews != null">#{pageViews},</if>
+            <if test="specificContent != null">#{specificContent},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateNews" parameterType="News">
+        update news
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="newsTitle != null">news_title = #{newsTitle},</if>
+            <if test="newsSource != null">news_source = #{newsSource},</if>
+            <if test="newsImg != null">news_img = #{newsImg},</if>
+            <if test="pageViews != null">page_views = #{pageViews},</if>
+            <if test="specificContent != null">specific_content = #{specificContent},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where news_id = #{newsId}
+    </update>
+
+    <delete id="deleteNewsByNewsId" parameterType="Long">
+        delete from news where news_id = #{newsId}
+    </delete>
+
+    <delete id="deleteNewsByNewsIds" parameterType="String">
+        delete from news where news_id in
+        <foreach item="newsId" collection="array" open="(" separator="," close=")">
+            #{newsId}
+        </foreach>
+    </delete>
+</mapper>
