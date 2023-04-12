@@ -1,16 +1,24 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="标题" prop="biaoti">
+      <el-form-item label="新闻题目" prop="newsTitle">
         <el-input
-          v-model="queryParams.biaoti"
-          placeholder="请输入标题"
+          v-model="queryParams.newsTitle"
+          placeholder="请输入新闻题目"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="是否发布" prop="flag">
-        <el-select v-model="queryParams.flag" placeholder="请选择是否发布" clearable>
+      <el-form-item label="新闻来源" prop="newsSource">
+        <el-input
+          v-model="queryParams.newsSource"
+          placeholder="请输入新闻来源"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
           <el-option
             v-for="dict in dict.type.news"
             :key="dict.value"
@@ -18,6 +26,22 @@
             :value="dict.value"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="创建者" prop="createBy">
+        <el-input
+          v-model="queryParams.createBy"
+          placeholder="请输入创建者"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="创建时间" prop="createTime">
+        <el-date-picker clearable
+                        v-model="queryParams.createTime"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="请选择创建时间">
+        </el-date-picker>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -33,7 +57,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:newsTest:add']"
+          v-hasPermi="['news:news:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -44,7 +68,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['system:newsTest:edit']"
+          v-hasPermi="['news:news:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -55,7 +79,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:newsTest:remove']"
+          v-hasPermi="['news:news:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -65,27 +89,42 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['system:newsTest:export']"
+          v-hasPermi="['news:news:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="newsTestList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="newsList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="id" align="center" prop="id" />
-      <el-table-column label="标题" align="center" prop="biaoti" />
-      <el-table-column label="内容" align="center" prop="neirong" :show-overflow-tooltip="true"/>
-      <el-table-column label="创建时间" align="center" prop="creatTime" width="180">
+      <el-table-column label="新闻id" align="center" prop="newsId" />
+      <el-table-column label="新闻题目" align="center" prop="newsTitle" />
+      <el-table-column label="新闻来源" align="center" prop="newsSource" />
+      <el-table-column label="图片链接" align="center" prop="newsImg" width="100">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.creatTime, '{y}-{m}-{d} {h}:{m}:{s}') }}</span>
+          <image-preview :src="scope.row.newsImg" :width="50" :height="50"/>
         </template>
       </el-table-column>
-      <el-table-column label="是否发布" align="center" prop="flag">
+      <el-table-column label="浏览量" align="center" prop="pageViews" />
+      <el-table-column label="正文" align="center" prop="specificContent" :show-overflow-tooltip="true"/>
+      <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.news" :value="scope.row.flag"/>
+          <dict-tag :options="dict.type.news" :value="scope.row.status"/>
         </template>
       </el-table-column>
+      <el-table-column label="创建者" align="center" prop="createBy" />
+      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {h}:{m}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新者" align="center" prop="updateBy" />
+      <el-table-column label="更新时间" align="center" prop="updateTime" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.updateTime, '{y}-{m}-{d} {h}:{m}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -93,14 +132,14 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:newsTest:edit']"
+            v-hasPermi="['news:news:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:newsTest:remove']"
+            v-hasPermi="['news:news:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -114,32 +153,33 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改新闻公告管理对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <!-- 添加或修改新闻对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="标题" prop="biaoti">
-          <el-input v-model="form.biaoti" placeholder="请输入标题" />
+        <el-form-item label="新闻题目" prop="newsTitle">
+          <el-input v-model="form.newsTitle" placeholder="请输入新闻题目" />
         </el-form-item>
-        <el-form-item label="内容" prop="neirong">
-          <el-input v-model="form.neirong" placeholder="请输入内容" />
+        <el-form-item label="新闻来源" prop="newsSource">
+          <el-input v-model="form.newsSource" placeholder="请输入新闻来源" />
         </el-form-item>
-        <el-form-item label="创建时间" prop="creatTime">
-          <el-date-picker clearable
-            v-model="form.creatTime"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择创建时间">
-          </el-date-picker>
+        <el-form-item label="图片链接">
+          <image-upload v-model="form.newsImg"/>
         </el-form-item>
-        <el-form-item label="是否发布" prop="flag">
-          <el-select v-model="form.flag" placeholder="请选择是否发布">
+        <el-form-item label="正文">
+          <editor v-model="form.specificContent" :min-height="192" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="请选择状态">
             <el-option
               v-for="dict in dict.type.news"
               :key="dict.value"
               :label="dict.label"
-:value="parseInt(dict.value)"
+              :value="dict.value"
             ></el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -151,10 +191,10 @@
 </template>
 
 <script>
-import { listNewsTest, getNewsTest, delNewsTest, addNewsTest, updateNewsTest } from "@/api/system/newsTest";
+import { listNews, getNews, delNews, addNews, updateNews } from "@/api/news/news";
 
 export default {
-  name: "NewsTest",
+  name: "News",
   dicts: ['news'],
   data() {
     return {
@@ -170,8 +210,8 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 新闻公告管理表格数据
-      newsTestList: [],
+      // 新闻表格数据
+      newsList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -180,8 +220,11 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        biaoti: null,
-        flag: null
+        newsTitle: null,
+        newsSource: null,
+        status: null,
+        createBy: null,
+        createTime: null,
       },
       // 表单参数
       form: {},
@@ -194,12 +237,12 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询新闻公告管理列表 */
+    /** 查询新闻列表 */
     getList() {
       this.loading = true;
-      listNewsTest(this.queryParams).then(response => {
-        this.newsTestList = response.rows;
-        console.log(this.newsTestList)
+      listNews(this.queryParams).then(response => {
+        this.newsList = response.rows;
+        // console.log(this.newsList.specificContent)
         this.total = response.total;
         this.loading = false;
       });
@@ -212,11 +255,18 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        id: null,
-        biaoti: null,
-        neirong: null,
-        creatTime: null,
-        flag: null
+        newsId: null,
+        newsTitle: null,
+        newsSource: null,
+        newsImg: null,
+        pageViews: null,
+        specificContent: null,
+        status: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null,
+        remark: null
       };
       this.resetForm("form");
     },
@@ -232,7 +282,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.id)
+      this.ids = selection.map(item => item.newsId)
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
@@ -240,30 +290,30 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加新闻公告管理";
+      this.title = "添加新闻";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const id = row.id || this.ids
-      getNewsTest(id).then(response => {
+      const newsId = row.newsId || this.ids
+      getNews(newsId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改新闻公告管理";
+        this.title = "修改新闻";
       });
     },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if (this.form.id != null) {
-            updateNewsTest(this.form).then(response => {
+          if (this.form.newsId != null) {
+            updateNews(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addNewsTest(this.form).then(response => {
+            addNews(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -274,9 +324,9 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const ids = row.id || this.ids;
-      this.$modal.confirm('是否确认删除新闻公告管理编号为"' + ids + '"的数据项？').then(function() {
-        return delNewsTest(ids);
+      const newsIds = row.newsId || this.ids;
+      this.$modal.confirm('是否确认删除新闻编号为"' + newsIds + '"的数据项？').then(function() {
+        return delNews(newsIds);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
@@ -284,9 +334,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/newsTest/export', {
+      this.download('news/news/export', {
         ...this.queryParams
-      }, `newsTest_${new Date().getTime()}.xlsx`)
+      }, `news_${new Date().getTime()}.xlsx`)
     }
   }
 };
